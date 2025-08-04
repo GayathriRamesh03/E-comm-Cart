@@ -9,6 +9,7 @@ import com.example.cart.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/cart")
 @RequiredArgsConstructor
