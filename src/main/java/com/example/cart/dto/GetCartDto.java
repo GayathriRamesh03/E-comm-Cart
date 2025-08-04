@@ -12,6 +12,7 @@ import java.util.List;
 @Setter
 public class GetCartDto {
     private int customerId;
+    private String customerEmail;
     private List<CartItem> items;
     private double totalPrice;
 }

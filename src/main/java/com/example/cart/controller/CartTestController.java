@@ -29,7 +29,8 @@ public class CartTestController {
         );
 
         CartCheckoutEvent event = new CartCheckoutEvent(
-                1, // customerId
+                1,
+                "1@email.com",// customerId
                 List.of(item),
                 500
         );

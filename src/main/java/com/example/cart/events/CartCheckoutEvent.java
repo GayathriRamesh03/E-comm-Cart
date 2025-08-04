@@ -12,6 +12,7 @@ import java.util.List;
 public class CartCheckoutEvent {
 
     private int customerId;
+    private String customerEmail;
     private List<CartItemDto> items;
     private double totalPrice;
 

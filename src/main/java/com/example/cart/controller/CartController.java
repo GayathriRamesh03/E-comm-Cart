@@ -51,6 +51,7 @@ public class CartController {
     private CartCheckoutEvent convertToCheckoutEvent(GetCartDto cart) {
         return new CartCheckoutEvent(
                 cart.getCustomerId(),
+                cart.getCustomerEmail(),
                 cart.getItems().stream().map(p -> new CartCheckoutEvent.CartItemDto(
                         p.getProductId(),
                         p.getProductName(),

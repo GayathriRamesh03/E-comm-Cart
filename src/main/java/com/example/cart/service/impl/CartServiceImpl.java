@@ -5,6 +5,7 @@ import com.example.cart.dto.GetCartDto;
 import com.example.cart.dto.UpdateQuantityDto;
 import com.example.cart.entity.Cart;
 import com.example.cart.entity.CartItem;
+import com.example.cart.exceptions.CartNotFoundException;
 import com.example.cart.repository.CartRepository;
 import com.example.cart.service.CartService;
 import lombok.RequiredArgsConstructor;
@@ -20,16 +21,24 @@ public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
 
+//    @Override
+//    public GetCartDto getCartByCustomerId(int customerId) {
+//        Cart cart = cartRepository.findByCustomerId(customerId).orElseGet(() -> new Cart(null, customerId, new ArrayList<>(), 0));
+//        return mapToGetCartDto(cart);
+//    }
+
     @Override
     public GetCartDto getCartByCustomerId(int customerId) {
-        Cart cart = cartRepository.findByCustomerId(customerId).orElseGet(() -> new Cart(null, customerId, new ArrayList<>(), 0));
+        Cart cart = cartRepository.findByCustomerId(customerId)
+                .orElseThrow(() -> new CartNotFoundException("Cart not found for customerId: " + customerId));
+
         return mapToGetCartDto(cart);
     }
 
     @Override
     public GetCartDto addProductToCart(AddProdToCartDto dto) {
         Cart cart = cartRepository.findByCustomerId(dto.getCustomerId()).orElseGet(() ->
-                new Cart(null, dto.getCustomerId(), new ArrayList<>(), 0)
+                new Cart(null, dto.getCustomerId(), dto.getCustomerEmail(), new ArrayList<>(), 0)
         );
 
         Optional<CartItem> existingItem = cart.getItems().stream()
@@ -110,6 +119,7 @@ public class CartServiceImpl implements CartService {
     private GetCartDto mapToGetCartDto(Cart cart) {
         GetCartDto dto = new GetCartDto();
         dto.setCustomerId(cart.getCustomerId());
+        dto.setCustomerEmail(cart.getCustomerEmail());
         dto.setItems(cart.getItems());
         dto.setTotalPrice(cart.getTotalPrice());
         return dto;

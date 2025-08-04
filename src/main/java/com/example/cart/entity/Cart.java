@@ -20,6 +20,8 @@ public class Cart {
 
     private int customerId;
 
+    private String customerEmail;
+
     private List<CartItem> items;
 
     private double totalPrice;

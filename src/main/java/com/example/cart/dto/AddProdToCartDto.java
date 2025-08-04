@@ -9,6 +9,7 @@ import lombok.*;
 @Setter
 public class AddProdToCartDto {
     private int customerId;
+    private String customerEmail;
     private int productId;
     private String productName;
     private int quantity;
