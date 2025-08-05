@@ -9,7 +9,7 @@ import com.example.cart.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin
+//@CrossOrigin
 @RestController
 @RequestMapping("/api/cart")
 @RequiredArgsConstructor
@@ -25,8 +25,8 @@ public class CartController {
     }
 
     @PostMapping("/add")
-    public boolean addProductToCart(@RequestBody AddProdToCartDto dto) {
-        cartService.addProductToCart(dto);
+    public boolean addProductToCart(@RequestBody AddProdToCartDto dto,@RequestHeader("X-Customer-Email")String customerEmail) {
+        cartService.addProductToCart(dto,customerEmail);
         return true;
     }
 

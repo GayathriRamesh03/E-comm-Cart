@@ -36,9 +36,9 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public GetCartDto addProductToCart(AddProdToCartDto dto) {
+    public GetCartDto addProductToCart(AddProdToCartDto dto, String customerEmail) {
         Cart cart = cartRepository.findByCustomerId(dto.getCustomerId()).orElseGet(() ->
-                new Cart(null, dto.getCustomerId(), dto.getCustomerEmail(), new ArrayList<>(), 0)
+                new Cart(null, dto.getCustomerId(), customerEmail, new ArrayList<>(), 0)
         );
 
         Optional<CartItem> existingItem = cart.getItems().stream()
@@ -65,7 +65,6 @@ public class CartServiceImpl implements CartService {
         cartRepository.save(cart);
         return mapToGetCartDto(cart);
     }
-
     @Override
     public GetCartDto updateQuantity(UpdateQuantityDto dto) {
         Cart cart = cartRepository.findByCustomerId(dto.getCustomerId()).orElseThrow(() ->

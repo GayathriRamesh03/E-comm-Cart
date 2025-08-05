@@ -8,7 +8,7 @@ public interface CartService {
 
     GetCartDto getCartByCustomerId(int customerId);
 
-    GetCartDto addProductToCart(AddProdToCartDto addProdToCartDto);
+    GetCartDto addProductToCart(AddProdToCartDto addProdToCartDto,String customerEmail);
 
     GetCartDto updateQuantity(UpdateQuantityDto updateQuantityDto);
 
