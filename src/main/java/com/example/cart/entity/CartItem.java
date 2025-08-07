@@ -9,6 +9,7 @@ import lombok.*;
 @Setter
 public class CartItem {
 
+    private String productImageUrl;
     private int sellerId;
     private int productId;
     private String productName;

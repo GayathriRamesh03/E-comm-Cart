@@ -4,6 +4,7 @@ import com.example.cart.dto.AddProdToCartDto;
 import com.example.cart.dto.GetCartDto;
 import com.example.cart.dto.UpdateQuantityDto;
 
+//Todo : Remove unused functions
 public interface CartService {
 
     GetCartDto getCartByCustomerId(int customerId);

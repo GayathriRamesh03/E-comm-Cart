@@ -3,6 +3,7 @@ package com.example.cart.controller;
 import com.example.cart.events.CartCheckoutEvent;
 import com.example.cart.events.CartCheckoutProducer;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,11 +16,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CartTestController {
 
-    private final CartCheckoutProducer cartCheckoutProducer;
+    @Autowired
+    private CartCheckoutProducer cartCheckoutProducer;
 
     @PostMapping("/checkout")
     public ResponseEntity<String> testCheckout() {
         CartCheckoutEvent.CartItemDto item = new CartCheckoutEvent.CartItemDto(
+                "dummy_url",
                 1, // productId
                 "Test Product",
                 2, // quantity

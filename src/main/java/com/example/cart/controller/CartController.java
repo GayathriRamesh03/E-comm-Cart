@@ -7,6 +7,7 @@ import com.example.cart.events.CartCheckoutEvent;
 import com.example.cart.events.CartCheckoutProducer;
 import com.example.cart.service.CartService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 //@CrossOrigin
@@ -15,8 +16,11 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CartController {
 
-    private final CartService cartService;
-    private final CartCheckoutProducer kafkaProducerService;
+    @Autowired
+    private CartService cartService;
+
+    @Autowired
+    private CartCheckoutProducer cartCheckoutProducer;
 
 
     @GetMapping("/{customerId}")
@@ -43,10 +47,10 @@ public class CartController {
 
     @PostMapping("/{customerId}/checkout")
     public void checkout(@PathVariable int customerId) {
-        GetCartDto cart = cartService.getCartByCustomerId(customerId); // 1. Get cart
-        CartCheckoutEvent event = convertToCheckoutEvent(cart); // 2. Convert to event
-        kafkaProducerService.sendCheckoutEvent(event); // 3. Send to Kafka
-        cartService.clearCart(customerId); // 4. Clear cart
+        GetCartDto cart = cartService.getCartByCustomerId(customerId);
+        CartCheckoutEvent event = convertToCheckoutEvent(cart);
+        cartCheckoutProducer.sendCheckoutEvent(event);
+        cartService.clearCart(customerId);
     }
 
     private CartCheckoutEvent convertToCheckoutEvent(GetCartDto cart) {
@@ -54,6 +58,7 @@ public class CartController {
                 cart.getCustomerId(),
                 cart.getCustomerEmail(),
                 cart.getItems().stream().map(p -> new CartCheckoutEvent.CartItemDto(
+                        p.getProductImageUrl(),
                         p.getProductId(),
                         p.getProductName(),
                         p.getQuantity(),

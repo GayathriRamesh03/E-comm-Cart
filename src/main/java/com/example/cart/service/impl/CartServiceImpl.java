@@ -1,6 +1,7 @@
 package com.example.cart.service.impl;
 
 import com.example.cart.dto.AddProdToCartDto;
+import com.example.cart.dto.CartItemDto;
 import com.example.cart.dto.GetCartDto;
 import com.example.cart.dto.UpdateQuantityDto;
 import com.example.cart.entity.Cart;
@@ -9,37 +10,42 @@ import com.example.cart.exceptions.CartNotFoundException;
 import com.example.cart.repository.CartRepository;
 import com.example.cart.service.CartService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CartServiceImpl implements CartService {
 
-    private final CartRepository cartRepository;
+    @Autowired
+    private CartRepository cartRepository;
 
-//    @Override
-//    public GetCartDto getCartByCustomerId(int customerId) {
-//        Cart cart = cartRepository.findByCustomerId(customerId).orElseGet(() -> new Cart(null, customerId, new ArrayList<>(), 0));
-//        return mapToGetCartDto(cart);
-//    }
-
+    //Todo : Handle Cart not existing condition (null), make use of Optional
     @Override
     public GetCartDto getCartByCustomerId(int customerId) {
-        Cart cart = cartRepository.findByCustomerId(customerId)
-                .orElseThrow(() -> new CartNotFoundException("Cart not found for customerId: " + customerId));
-
+        Optional<Cart> optionalCart = cartRepository.findByCustomerId(customerId);
+        if (optionalCart.isEmpty()) {
+            throw new CartNotFoundException("Cart not found for customerId: " + customerId);
+        }
+        Cart cart = optionalCart.get();
         return mapToGetCartDto(cart);
     }
 
     @Override
     public GetCartDto addProductToCart(AddProdToCartDto dto, String customerEmail) {
-        Cart cart = cartRepository.findByCustomerId(dto.getCustomerId()).orElseGet(() ->
-                new Cart(null, dto.getCustomerId(), customerEmail, new ArrayList<>(), 0)
-        );
+        Optional<Cart> optionalCart = cartRepository.findByCustomerId(dto.getCustomerId());
+
+        Cart cart;
+        if (optionalCart.isPresent()) {
+            cart = optionalCart.get();
+        } else {
+            cart = new Cart(null, dto.getCustomerId(), customerEmail, new ArrayList<>(), 0);
+        }
 
         Optional<CartItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getProductId() == dto.getProductId())
@@ -51,6 +57,7 @@ public class CartServiceImpl implements CartService {
             item.setTotalPrice(item.getProductPrice() * item.getQuantity());
         } else {
             CartItem newItem = new CartItem(
+                    dto.getProductImageUrl(),
                     dto.getSellerId(),
                     dto.getProductId(),
                     dto.getProductName(),
@@ -65,12 +72,16 @@ public class CartServiceImpl implements CartService {
         cartRepository.save(cart);
         return mapToGetCartDto(cart);
     }
+
     @Override
     public GetCartDto updateQuantity(UpdateQuantityDto dto) {
-        Cart cart = cartRepository.findByCustomerId(dto.getCustomerId()).orElseThrow(() ->
-                new RuntimeException("Cart not found")
-        );
+        Optional<Cart> optionalCart = cartRepository.findByCustomerId(dto.getCustomerId());
 
+        if (!optionalCart.isPresent()) {
+            throw new CartNotFoundException("Cart not found");
+        }
+
+        Cart cart = optionalCart.get();
         for (CartItem item : cart.getItems()) {
             if (item.getProductId() == dto.getProductId()) {
                 item.setQuantity(dto.getQuantity());
@@ -86,29 +97,36 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void removeProductFromCart(int customerId, int productId) {
-        Cart cart = cartRepository.findByCustomerId(customerId).orElseThrow(() ->
-                new RuntimeException("Cart not found")
-        );
+        Optional<Cart> optionalCart = cartRepository.findByCustomerId(customerId);
 
-        cart.getItems().removeIf(item -> item.getProductId() == productId);
-        cart.setTotalPrice(calculateTotalPrice(cart.getItems()));
-        cartRepository.save(cart);
+        if (optionalCart.isPresent()) {
+            Cart cart = optionalCart.get();
+
+            cart.getItems().removeIf(item -> item.getProductId() == productId);
+            cart.setTotalPrice(calculateTotalPrice(cart.getItems()));
+            cartRepository.save(cart);
+        } else {
+            throw new CartNotFoundException("Cart not found for customerId: " + customerId);
+        }
     }
 
     @Override
     public void clearCart(int customerId) {
-        Cart cart = cartRepository.findByCustomerId(customerId).orElseThrow(() ->
-                new RuntimeException("Cart not found")
-        );
-        cart.setItems(new ArrayList<>());
-        cart.setTotalPrice(0);
-        cartRepository.save(cart);
+        Optional<Cart> optionalCart = cartRepository.findByCustomerId(customerId);
+
+        if (optionalCart.isPresent()) {
+            Cart cart = optionalCart.get();
+            cart.setItems(new ArrayList<>());
+            cart.setTotalPrice(0);
+            cartRepository.save(cart);
+        } else {
+            throw new CartNotFoundException("Cart not found");
+        }
     }
 
     @Override
     public void checkoutCart(int customerId) {
-        // Placeholder for Kafka publish logic, payment service, etc.
-        clearCart(customerId); // After order is placed
+        clearCart(customerId);
     }
 
     private double calculateTotalPrice(List<CartItem> items) {
@@ -119,8 +137,20 @@ public class CartServiceImpl implements CartService {
         GetCartDto dto = new GetCartDto();
         dto.setCustomerId(cart.getCustomerId());
         dto.setCustomerEmail(cart.getCustomerEmail());
-        dto.setItems(cart.getItems());
+
+        List<CartItemDto> itemDtos = cart.getItems().stream().map(item -> new CartItemDto(
+                item.getProductImageUrl(),
+                item.getSellerId(),
+                item.getProductId(),
+                item.getProductName(),
+                item.getProductPrice(),
+                item.getQuantity(),
+                item.getTotalPrice()
+        )).collect(Collectors.toList());
+
+        dto.setItems(itemDtos);
         dto.setTotalPrice(cart.getTotalPrice());
         return dto;
     }
+
 }

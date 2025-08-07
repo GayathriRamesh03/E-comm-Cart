@@ -8,6 +8,7 @@ import lombok.*;
 @Getter
 @Setter
 public class AddProdToCartDto {
+    private String productImageUrl;
     private int customerId;
     private int productId;
     private String productName;

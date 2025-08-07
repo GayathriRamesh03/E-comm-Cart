@@ -6,6 +6,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CartItemDto {
+    private String productImageUrl;
     private int sellerId;
     private int productId;
     private String productName;

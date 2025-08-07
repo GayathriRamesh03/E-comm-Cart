@@ -16,7 +16,7 @@ import java.util.List;
 public class Cart {
 
     @Id
-    private String id;  // MongoDB will generate _id
+    private String id;
 
     private int customerId;
 

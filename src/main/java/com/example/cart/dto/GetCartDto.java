@@ -1,6 +1,5 @@
 package com.example.cart.dto;
 
-import com.example.cart.entity.CartItem;
 import lombok.*;
 
 import java.util.List;
@@ -13,6 +12,6 @@ import java.util.List;
 public class GetCartDto {
     private int customerId;
     private String customerEmail;
-    private List<CartItem> items;
+    private List<CartItemDto> items;
     private double totalPrice;
 }

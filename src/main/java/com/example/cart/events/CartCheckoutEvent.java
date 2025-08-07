@@ -20,6 +20,7 @@ public class CartCheckoutEvent {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CartItemDto {
+        private String productImageUrl;
         private int productId;
         private String productName;
         private int quantity;
